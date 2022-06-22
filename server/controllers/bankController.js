@@ -1,4 +1,5 @@
 const Sequelize = require("sequelize");
+const tabela = require("../../models/bancos");
 
 require("dotenv").config();
 
@@ -9,13 +10,19 @@ require("dotenv").config();
     port: 5455
 });
 
-//View Banks
+//Check Database
 exports.view = (req,res) => {
-    res.render("banks");
+    tabela.findAll().then((posts) => {
+        res.render("banks",{id: 2, nome: "xablesco",numero: "002"});
+
+    })
 
     sequelize.authenticate().then(() =>{
         console.log("Banco Conectado")
     }).catch((erro) =>{
         console.log(`Falha ao se conectar: ${erro}`);
     })
+
+    
+    
 }
