@@ -13,22 +13,22 @@
             <th scope="col" class="text-end">Ações</th>
         </tr>
     </thead>
+    {{#each allAgencies}}
     <tbody>
-        <th scope="row">1</th>
-        <td>002</td>
-        <td>Rio de Janeiro</td>
-        <td>62981157002</td>
-        <td>Banco Físico</td>
-        <td>6233330309</td>
-        <td>Banco Digital</td>
-        <td>05874</td>
-        <td>Agencia Dumont</td>
+        <th scope="row">{{id}}</th>
+        <td scope="row">{{id_banco}}</td>
+        <td scope="row">{{endereco}}</td>
+        <td scope="row">{{fone}}</td>
+        <td scope="row">{{tipo}}</td>
+        <td scope="row">{{fone1}}</td>
+        <td scope="row">{{tipo1}}</td>
+        <td scope="row">{{agencia}}</td>
+        <td scope="row">{{nome_agencia}}</td>
         <td class="text-end">
             <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-eye"></i> Ver</a>
             <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-pencil"></i> Editar</a>
             <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-x-lg"></i> Excluir</a>
         </td>
-
-
     </tbody>
+    {{/each}}
 </table>

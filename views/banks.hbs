@@ -1,20 +1,22 @@
 <table class="table table-dark table-hover align-middle">
   <thead>
     <tr>
-        <th scope="col">#</th>
-        <th scope="col">Nome</th>
-        <th scope="col">Número</th>
-        <th scope="col" class="text-end">Ações</th>
+      <th scope="col">#</th>
+      <th scope="col">Nome</th>
+      <th scope="col">Número</th>
+      <th scope="col" class="text-end">Ações</th>
     </tr>
   </thead>
+  {{#each allBanks}}
   <tbody>
-    <th scope="row">1</th>
-        <td>Bradesco</td>
-        <td>002</td>
-        <td class="text-end">
-            <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-eye"></i> Ver</a>
-            <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-pencil"></i> Editar</a>
-            <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-x-lg"></i> Excluir</a>
-        </td>
+    <th scope="row">{{id}}</th>
+    <td scope="row">{{nome}}</td>
+    <td scope="row">{{numero}}</td>
+    <td class="text-end">
+      <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-eye"></i> Ver</a>
+      <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-pencil"></i> Editar</a>
+      <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-x-lg"></i> Excluir</a>
+    </td>
   </tbody>
+  {{/each}}
 </table>

@@ -1,25 +1,23 @@
-const Sequelize = require("sequelize");
-
-require("dotenv").config();
-
 const { PrismaClient } = require('@prisma/client')
 
+//Prisma Client
 const prisma = new PrismaClient()
 
+//Querying Bancos
 async function main() {
-  const allBanks = await prisma.banco.findMany();
-  console.log(allBanks)
+  
 }
 
 main()
-  .catch((e) => {
+.catch((e) => {
     throw e
-  })
-  .finally(async () => {
+})
+.finally(async () => {
     await prisma.$disconnect()
-  })
+})
 
 //View Agencies
-exports.view = (req,res) => {
-    res.render("agency");
+exports.view = async (req,res) => {
+    const allAgencies = await prisma.agencia_bancaria.findMany();
+    res.render("agency", {allAgencies: allAgencies});
 }
