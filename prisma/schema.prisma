@@ -1,0 +1,1138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model agencia_bancaria {
+  id                                                          Int                @id @default(autoincrement())
+  id_banco                                                    Int
+  endereco                                                    String?
+  fone                                                        BigInt?
+  tipo                                                        Int?
+  fone1                                                       BigInt?
+  tipo1                                                       Int?
+  agencia                                                     String
+  nome_agencia                                                String?
+  banco                                                       banco              @relation(fields: [id_banco], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_banco")
+  cd_complementares_agencia_bancaria_tipoTocd_complementares  cd_complementares? @relation("agencia_bancaria_tipoTocd_complementares", fields: [tipo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo")
+  cd_complementares_agencia_bancaria_tipo1Tocd_complementares cd_complementares? @relation("agencia_bancaria_tipo1Tocd_complementares", fields: [tipo1], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo1")
+  conta_corrente                                              conta_corrente[]
+  contato_banco                                               contato_banco[]
+}
+
+model auditlog {
+  id     Int       @id @default(autoincrement())
+  model  String    @db.VarChar(255)
+  action String    @db.VarChar(255)
+  old    String?
+  new    String?
+  at     DateTime? @db.Timestamp(0)
+  by     Int?
+}
+
+model banco {
+  id                                        Int                @id @default(autoincrement())
+  nome                                      String
+  numero                                    String?
+  agencia_bancaria                          agencia_bancaria[]
+  cheque                                    cheque[]
+  funcionario                               funcionario[]
+  operadora                                 operadora[]
+  pessoa_fisica_bancoTopessoa_fisica_banco  pessoa_fisica[]    @relation("bancoTopessoa_fisica_banco")
+  pessoa_fisica_bancoTopessoa_fisica_banco1 pessoa_fisica[]    @relation("bancoTopessoa_fisica_banco1")
+  pessoa_fisica_bancoTopessoa_fisica_banco2 pessoa_fisica[]    @relation("bancoTopessoa_fisica_banco2")
+}
+
+model bandeiras {
+  id             Int              @id @default(autoincrement())
+  nome           String
+  logomarca      String
+  cartao         cartao[]
+  tipo_pagamento tipo_pagamento[]
+}
+
+model boleto {
+  id                Int             @id @default(autoincrement())
+  emissao           DateTime        @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  numero            String
+  valor             Decimal?        @db.Decimal(19, 4)
+  pagamento_id      Int?
+  pago              Boolean?
+  tipo_pagamento_id Int?
+  pagamento         pagamento?      @relation(fields: [pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pagamento")
+  tipo_pagamento    tipo_pagamento? @relation(fields: [tipo_pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "boleto_tipo_pagamento_fk")
+}
+
+model caixa {
+  id                Int             @id @default(autoincrement())
+  nome              String?
+  funcionario_ativo Int?
+  relacao_caixa     relacao_caixa[]
+}
+
+model cartao {
+  id               Int                @id @default(autoincrement())
+  id_bandeira      Int
+  id_operadora     Int
+  id_contaCorrente Int
+  cartao           Int
+  tipo             Int
+  dia              Int?
+  titular          String?
+  taxa             Decimal?           @db.Decimal(19, 4)
+  status           Boolean?           @default(true)
+  bandeiras        bandeiras          @relation(fields: [id_bandeira], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_bandeira")
+  conta_corrente   conta_corrente     @relation(fields: [id_contaCorrente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contaCorrente")
+  operadora        operadora          @relation(fields: [id_operadora], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_operadora")
+  cartao_adicional cartao_adicional[]
+  cartao_parcelas  cartao_parcelas[]
+}
+
+model cartao_adicional {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  id_cartao Int
+  status    Boolean? @default(true)
+  cartao    cartao   @relation(fields: [id_cartao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cartaoCredito")
+}
+
+model cartao_parcelas {
+  id          Int      @id @default(autoincrement())
+  n_parcela   Int
+  taxa        Float
+  id_cartao   Int
+  status      Boolean  @default(true)
+  dataInicial DateTime @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  cartao      cartao   @relation(fields: [id_cartao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cartao")
+}
+
+model cd_complementares {
+  id                                                                       Int                         @id @default(autoincrement())
+  nome                                                                     String
+  tipo                                                                     String
+  agencia_bancaria_agencia_bancaria_tipoTocd_complementares                agencia_bancaria[]          @relation("agencia_bancaria_tipoTocd_complementares")
+  agencia_bancaria_agencia_bancaria_tipo1Tocd_complementares               agencia_bancaria[]          @relation("agencia_bancaria_tipo1Tocd_complementares")
+  cheque_cd_complementaresTocheque_situacao                                cheque[]                    @relation("cd_complementaresTocheque_situacao")
+  cheque_cd_complementaresTocheque_status                                  cheque[]                    @relation("cd_complementaresTocheque_status")
+  compra                                                                   compra[]
+  conta_corrente_cd_complementaresToconta_corrente_aplicacao               conta_corrente[]            @relation("cd_complementaresToconta_corrente_aplicacao")
+  conta_corrente_cd_complementaresToconta_corrente_tipo                    conta_corrente[]            @relation("cd_complementaresToconta_corrente_tipo")
+  contas_pagar                                                             contas_pagar[]
+  contas_receber                                                           contas_receber[]
+  descricao_evento_bancario                                                descricao_evento_bancario[]
+  funcionario_cd_complementaresTofuncionario_funcao                        funcionario[]               @relation("cd_complementaresTofuncionario_funcao")
+  funcionario_cd_complementaresTofuncionario_motivo                        funcionario[]               @relation("cd_complementaresTofuncionario_motivo")
+  funcionario_cd_complementaresTofuncionario_situacao_trabalhista          funcionario[]               @relation("cd_complementaresTofuncionario_situacao_trabalhista")
+  funcionario_cd_complementaresTofuncionario_tipo_conta                    funcionario[]               @relation("cd_complementaresTofuncionario_tipo_conta")
+  movimentacao                                                             movimentacao[]
+  movimentacao_caixa                                                       movimentacao_caixa[]
+  pessoa_fisica_cd_complementaresTopessoa_fisica_categoria                 pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_categoria")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_categoria_reservista      pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_categoria_reservista")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_df_tipo                   pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_df_tipo")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_df_tipo2                  pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_df_tipo2")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_escolaridade              pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_escolaridade")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_estado_civil              pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_estado_civil")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_sexo                      pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_sexo")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_tipo                      pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_tipo")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_tipo2                     pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_tipo2")
+  pessoa_fisica_cd_complementaresTopessoa_fisica_tipo3                     pessoa_fisica[]             @relation("cd_complementaresTopessoa_fisica_tipo3")
+  pessoa_fisica_dependentes                                                pessoa_fisica_dependentes[]
+  pessoa_juridica_cd_complementaresTopessoa_juridica_tipo                  pessoa_juridica[]           @relation("cd_complementaresTopessoa_juridica_tipo")
+  pessoa_juridica_cd_complementaresTopessoa_juridica_tipo1                 pessoa_juridica[]           @relation("cd_complementaresTopessoa_juridica_tipo1")
+  pessoa_juridica_contato_cd_complementaresTopessoa_juridica_contato_tipo  pessoa_juridica_contato[]   @relation("cd_complementaresTopessoa_juridica_contato_tipo")
+  pessoa_juridica_contato_cd_complementaresTopessoa_juridica_contato_tipo1 pessoa_juridica_contato[]   @relation("cd_complementaresTopessoa_juridica_contato_tipo1")
+  preco_produto                                                            preco_produto[]
+  servico_cd_complementaresToservico_setor                                 servico[]                   @relation("cd_complementaresToservico_setor")
+  servico_cd_complementaresToservico_tipo_fornecedor                       servico[]                   @relation("cd_complementaresToservico_tipo_fornecedor")
+
+  @@index([tipo], map: "index_cd_complementares_tipo")
+}
+
+model cheque {
+  id                                                   Int                              @id @default(autoincrement())
+  tipo_pessoa                                          Int
+  cpf_cnpj                                             BigInt
+  titular                                              String?
+  banco_id                                             Int?
+  agencia                                              String?
+  conta_corrente                                       String?
+  n_cheque                                             String?
+  tipo_pagamento_id                                    Int?
+  status                                               Int?
+  situacao                                             Int?                             @default(49)
+  data_deposito                                        DateTime                         @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  data_compensacao                                     DateTime?                        @db.Date
+  banco                                                banco?                           @relation(fields: [banco_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cheque_banco_id_fk")
+  cd_complementares_cd_complementaresTocheque_situacao cd_complementares?               @relation("cd_complementaresTocheque_situacao", fields: [situacao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "situacao_dados_cd_cheque_fk")
+  cd_complementares_cd_complementaresTocheque_status   cd_complementares?               @relation("cd_complementaresTocheque_status", fields: [status], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "status_dados_cd_cheque_fk")
+  tipo_pagamento                                       tipo_pagamento?                  @relation(fields: [tipo_pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cheque_pagamento_id_fk")
+  deposito_cheque                                      deposito_cheque[]
+  folha_cheque_pagamento                               folha_cheque_pagamento[]
+  movimentacao_caixa                                   movimentacao_caixa[]
+  movimentacao_tesouraria_cheque                       movimentacao_tesouraria_cheque[]
+  pagamento_cheque_terceiros                           pagamento_cheque_terceiros[]     @ignore
+}
+
+model compra {
+  id                                                      Int                   @id @default(autoincrement())
+  id_fisico                                               Int?
+  id_juridico                                             Int?
+  tipo_documento                                          Int
+  data                                                    DateTime              @db.Date
+  numero                                                  Int
+  valorTotalDoc                                           Decimal               @db.Decimal(19, 4)
+  frete                                                   Decimal?              @db.Decimal(19, 4)
+  outrasDespesas                                          Decimal?              @db.Decimal(19, 4)
+  observacoes                                             String?
+  status                                                  Boolean               @default(false)
+  contas_pagar_id                                         Int?
+  frete_status                                            Boolean?              @default(false)
+  frete_contas_pagar_id                                   Int?
+  id_juridico_frete                                       Int?
+  id_fisico_frete                                         Int?
+  contas_pagar_compra_contas_pagar_idTocontas_pagar       contas_pagar?         @relation("compra_contas_pagar_idTocontas_pagar", fields: [contas_pagar_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "compra_contas_pagar_fk")
+  contas_pagar_compra_frete_contas_pagar_idTocontas_pagar contas_pagar?         @relation("compra_frete_contas_pagar_idTocontas_pagar", fields: [frete_contas_pagar_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "compra_frete_contas_pagar_fk")
+  fornecedor_compra_id_fisicoTofornecedor                 fornecedor?           @relation("compra_id_fisicoTofornecedor", fields: [id_fisico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "compra_pessoa_fisica_fk")
+  fornecedor_compra_id_fisico_freteTofornecedor           fornecedor?           @relation("compra_id_fisico_freteTofornecedor", fields: [id_fisico_frete], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_compra_fornecedor_fisico_frete")
+  fornecedor_compra_id_juridicoTofornecedor               fornecedor?           @relation("compra_id_juridicoTofornecedor", fields: [id_juridico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "compra_pessoa_juridica_fk")
+  fornecedor_compra_id_juridico_freteTofornecedor         fornecedor?           @relation("compra_id_juridico_freteTofornecedor", fields: [id_juridico_frete], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_compra_fornecedor_juridico_frete")
+  cd_complementares                                       cd_complementares     @relation(fields: [tipo_documento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "compra_complementar_fk")
+  items_compra                                            items_compra[]
+  pagamento                                               pagamento[]
+  programar_pagamento                                     programar_pagamento[]
+}
+
+model configuracao_boleto {
+  id                 Int             @id @default(autoincrement())
+  boleto_cloud_token String?
+  vencimento         String?
+  especie_doc        String?
+  juros              Float?
+  multa              Float?
+  boleto_instrucao   String?
+  conta_corrente_id  Int?            @unique
+  conta_corrente     conta_corrente? @relation(fields: [conta_corrente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "configuracao_boleto_conta_corrente_fk")
+}
+
+model configuracao_empresa {
+  id                     Int     @id @default(autoincrement())
+  nome_loja              String
+  cnpj_loja              BigInt
+  logo                   String?
+  admin_email            String?
+  endereco_cep           String?
+  endereco_logradouro    String?
+  endereco_numero        String?
+  endereco_bairro        String?
+  endereco_cidade        String?
+  endereco_uf            String?
+  endereco_complemento   String?
+  boleto_cloud_token_api String?
+}
+
+model conta_corrente {
+  id                                                            Int                  @id @default(autoincrement())
+  id_agencia_bancaria                                           Int
+  tipo                                                          Int
+  aplicacao                                                     Int
+  n_conta                                                       String
+  contabil                                                      Int?                 @default(1)
+  saldo                                                         Decimal?             @default(0) @db.Decimal(19, 4)
+  cd_complementares_cd_complementaresToconta_corrente_aplicacao cd_complementares    @relation("cd_complementaresToconta_corrente_aplicacao", fields: [aplicacao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_aplicacao")
+  plano_de_contas                                               plano_de_contas?     @relation(fields: [contabil], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contabil")
+  agencia_bancaria                                              agencia_bancaria     @relation(fields: [id_agencia_bancaria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_agenciaBancaria")
+  cd_complementares_cd_complementaresToconta_corrente_tipo      cd_complementares    @relation("cd_complementaresToconta_corrente_tipo", fields: [tipo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo")
+  cartao                                                        cartao[]
+  configuracao_boleto                                           configuracao_boleto?
+  contato_banco                                                 contato_banco[]
+  deposito                                                      deposito[]
+  evento_bancario                                               evento_bancario[]
+  financeira                                                    financeira[]
+  folhas_cheque                                                 folhas_cheque[]
+  parcelas_pagamento                                            parcelas_pagamento[]
+  remessas                                                      remessas[]
+  tipo_pagamento                                                tipo_pagamento[]
+}
+
+model contas_pagar {
+  id                                                Int                     @id @default(autoincrement())
+  id_fisico                                         Int?
+  id_juridico                                       Int?
+  tipo_documento                                    Int
+  data                                              DateTime                @db.Date
+  numero                                            Int
+  historico                                         String?
+  valor                                             Decimal                 @db.Decimal(19, 4)
+  n_parcela                                         Int                     @default(0)
+  status                                            Boolean                 @default(false)
+  vencimento                                        DateTime?               @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  fornecedor_contas_pagar_id_fisicoTofornecedor     fornecedor?             @relation("contas_pagar_id_fisicoTofornecedor", fields: [id_fisico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contas_pagar_pessoa_fisica_fk")
+  fornecedor_contas_pagar_id_juridicoTofornecedor   fornecedor?             @relation("contas_pagar_id_juridicoTofornecedor", fields: [id_juridico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contas_pagar_pessoa_juridica_fk")
+  cd_complementares                                 cd_complementares       @relation(fields: [tipo_documento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "contas_pagar_complementar_fk")
+  compra_compra_contas_pagar_idTocontas_pagar       compra[]                @relation("compra_contas_pagar_idTocontas_pagar")
+  compra_compra_frete_contas_pagar_idTocontas_pagar compra[]                @relation("compra_frete_contas_pagar_idTocontas_pagar")
+  parcelas_contas_pagar                             parcelas_contas_pagar[]
+  venda                                             venda[]
+}
+
+model contas_receber {
+  id                      Int                       @id @default(autoincrement())
+  id_fisico               Int?
+  id_juridico             Int?
+  tipo_documento          Int
+  data                    DateTime                  @db.Date
+  numero                  Int?
+  historico               Int?
+  valor                   Decimal                   @db.Decimal(19, 4)
+  n_parcela               Int
+  status                  Boolean?                  @default(false)
+  vencimento              DateTime                  @db.Date
+  pessoa_fisica           pessoa_fisica?            @relation(fields: [id_fisico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contas_receber_cliente_fisico")
+  pessoa_juridica         pessoa_juridica?          @relation(fields: [id_juridico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contas_receber_cliente_juridico")
+  cd_complementares       cd_complementares         @relation(fields: [tipo_documento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_venda_pessoa_juridica_id")
+  parcelas_contas_receber parcelas_contas_receber[]
+}
+
+model contato_banco {
+  id                  Int               @id @default(autoincrement())
+  nome                String?
+  funcao              String?
+  fone                BigInt?
+  tipo                Int?
+  email               String?
+  id_conta_corrente   Int?
+  id_agencia_bancaria Int?
+  agencia_bancaria    agencia_bancaria? @relation(fields: [id_agencia_bancaria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_agenciaBancaria")
+  conta_corrente      conta_corrente?   @relation(fields: [id_conta_corrente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contaCorrente")
+}
+
+model departamento {
+  id                 Int            @id @default(autoincrement())
+  descricao          String
+  departamento_id    Int?
+  departamento       departamento?  @relation("departamentoTodepartamento_departamento_id", fields: [departamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_departamento")
+  other_departamento departamento[] @relation("departamentoTodepartamento_departamento_id")
+  funcionario        funcionario[]
+}
+
+model deposito {
+  id                       Int                    @id @default(autoincrement())
+  id_contaCorrente         Int
+  valorDinheiro            Decimal?               @db.Decimal(19, 4)
+  valorCheque              Decimal?               @db.Decimal(19, 4)
+  data                     DateTime?              @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  fechamento_caixa_id      Int?
+  relacao_caixa_id         Int?
+  tesouraria_id            Int?
+  fechamento_tesouraria_id Int?
+  fechamento_caixa         fechamento_caixa?      @relation(fields: [fechamento_caixa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "deposito_fechamento_caixa_fk")
+  fechamento_tesouraria    fechamento_tesouraria? @relation(fields: [fechamento_tesouraria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "deposito_fechamento_tesouraria_fk")
+  conta_corrente           conta_corrente         @relation(fields: [id_contaCorrente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contaCorrente")
+  relacao_caixa            relacao_caixa?         @relation(fields: [relacao_caixa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_relacao_caixa")
+  tesouraria               tesouraria?            @relation(fields: [tesouraria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tesouraria")
+  deposito_cheque          deposito_cheque[]
+}
+
+model deposito_cheque {
+  id          Int      @id @default(autoincrement())
+  cheque_id   Int
+  deposito_id Int
+  cheque      cheque   @relation(fields: [cheque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "deposito_cheque_cheque_id_fk")
+  deposito    deposito @relation(fields: [deposito_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "deposito_cheque_deposito_id_fk")
+}
+
+model descricao_evento_bancario {
+  id                Int               @id @default(autoincrement())
+  descricao         String
+  tipo_movimentacao Int
+  altera_saldo      Boolean
+  cd_complementares cd_complementares @relation(fields: [tipo_movimentacao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_descricao_evento_bancario_cd_complementares")
+  evento_bancario   evento_bancario[]
+}
+
+model entrada_produto {
+  id           Int       @id @default(autoincrement())
+  data_entrada DateTime? @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  qnt          Int
+  valor_custo  Decimal?  @db.Decimal(10, 0)
+  ipi          Decimal?  @db.Decimal(10, 0)
+  valor_total  Decimal   @default(0) @db.Decimal(10, 0)
+  produto_id   Int
+  produto      produto   @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "entrada_produto_id_produto_fk")
+}
+
+model evento_bancario {
+  id                           Int                        @id @default(autoincrement())
+  classificao_contabil         String?
+  historico                    String
+  conta_corrente_id            Int
+  valor                        Decimal                    @db.Decimal(19, 4)
+  descricao_evento_bancario_id Int?
+  data                         DateTime?                  @db.Date
+  data_compensacao             DateTime?                  @db.Date
+  conta_corrente               conta_corrente             @relation(fields: [conta_corrente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_evento_bancario_conta_corrente")
+  descricao_evento_bancario    descricao_evento_bancario? @relation(fields: [descricao_evento_bancario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "descricao_evento_bancario_fk")
+}
+
+model fechamento_caixa {
+  id                      Int                       @id @default(autoincrement())
+  data                    DateTime                  @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  saldo_inicial           Decimal                   @default(0) @db.Decimal(19, 4)
+  saldo_final             Decimal                   @db.Decimal(19, 4)
+  funcionario_id          Int?
+  relacao_id              Int?
+  funcionario             funcionario?              @relation(fields: [funcionario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario")
+  deposito                deposito[]
+  movimentacao_tesouraria movimentacao_tesouraria[]
+  pagamento               pagamento[]
+}
+
+model fechamento_tesouraria {
+  id                      Int                       @id @default(autoincrement())
+  data                    DateTime                  @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  saldo_inicial           Decimal                   @default(0) @db.Decimal(19, 4)
+  saldo_final             Decimal                   @db.Decimal(19, 4)
+  funcionario_id          Int?
+  tesouraria_id           Int?
+  funcionario             funcionario?              @relation(fields: [funcionario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario_id")
+  tesouraria              tesouraria?               @relation(fields: [tesouraria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tesouraria_id")
+  deposito                deposito[]
+  movimentacao_tesouraria movimentacao_tesouraria[]
+  pagamento               pagamento[]
+}
+
+model financeira {
+  id                  Int                   @id @default(autoincrement())
+  nome                String
+  sigla               String
+  id_contaCorrente    Int
+  dia                 Int?
+  parcelas            Int?
+  taxa                Decimal?              @db.Decimal(19, 4)
+  conta_corrente      conta_corrente        @relation(fields: [id_contaCorrente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contaCorrente")
+  financeira_condicao financeira_condicao[]
+  tipo_pagamento      tipo_pagamento[]
+}
+
+model financeira_condicao {
+  id            Int         @id @default(autoincrement())
+  parcela       Int?
+  id_financeira Int?
+  status        Boolean?    @default(true)
+  dia           Int?
+  taxa          Decimal?    @db.Decimal(19, 4)
+  financeira    financeira? @relation(fields: [id_financeira], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_financeira")
+}
+
+model folha_cheque_pagamento {
+  id            Int      @id @default(autoincrement())
+  numero        Int?
+  valor         Decimal  @db.Decimal(19, 4)
+  data_deposito DateTime @db.Date
+  cheque_id     Int?
+  cheque        cheque?  @relation(fields: [cheque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_folha_cheque_pagamento_cheque")
+}
+
+model folhas_cheque {
+  id                Int             @id @default(autoincrement())
+  numero            BigInt?
+  id_contaCorrente  Int?
+  usado             Boolean?        @default(false)
+  valor             Decimal?        @default(0) @db.Decimal(19, 4)
+  tipo_pagamento_id Int?
+  data_vencimento   DateTime?       @db.Date
+  compensado        Boolean?        @default(false)
+  conta_corrente    conta_corrente? @relation(fields: [id_contaCorrente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_folhasCheque")
+  tipo_pagamento    tipo_pagamento? @relation(fields: [tipo_pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "folhas_cheque_tipo_pagamento_fk")
+}
+
+model formas_de_pagamento {
+  id               Int              @id @default(autoincrement())
+  descricao        String
+  id_classificacao Int
+  tipo             Int?
+  plano_de_contas  plano_de_contas  @relation(fields: [id_classificacao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_planoDeContas")
+  tipo_pagamento   tipo_pagamento[]
+}
+
+model fornecedor {
+  id                                                Int              @id @default(autoincrement())
+  site                                              String?
+  observacoes                                       String?
+  id_pessoa_fisica                                  Int?
+  id_pessoa_juridica                                Int?
+  pessoa_fisica                                     pessoa_fisica?   @relation(fields: [id_pessoa_fisica], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pessoaFisica")
+  pessoa_juridica                                   pessoa_juridica? @relation(fields: [id_pessoa_juridica], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pessoaJuridica")
+  compra_compra_id_fisicoTofornecedor               compra[]         @relation("compra_id_fisicoTofornecedor")
+  compra_compra_id_fisico_freteTofornecedor         compra[]         @relation("compra_id_fisico_freteTofornecedor")
+  compra_compra_id_juridicoTofornecedor             compra[]         @relation("compra_id_juridicoTofornecedor")
+  compra_compra_id_juridico_freteTofornecedor       compra[]         @relation("compra_id_juridico_freteTofornecedor")
+  contas_pagar_contas_pagar_id_fisicoTofornecedor   contas_pagar[]   @relation("contas_pagar_id_fisicoTofornecedor")
+  contas_pagar_contas_pagar_id_juridicoTofornecedor contas_pagar[]   @relation("contas_pagar_id_juridicoTofornecedor")
+}
+
+model funcionario {
+  id                                                                    Int                     @id @default(autoincrement())
+  num_ficha                                                             String?
+  funcao                                                                Int?
+  fbanco                                                                Int?
+  fagencia                                                              String?
+  conta_corrente                                                        String?
+  tipo_conta                                                            Int?
+  pessoa_fisica_id                                                      Int?
+  situacao_trabalhista                                                  Int?
+  motivo                                                                Int?
+  departamento_id                                                       Int?
+  departamento                                                          departamento?           @relation(fields: [departamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_departamento")
+  banco                                                                 banco?                  @relation(fields: [fbanco], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario_Banco")
+  cd_complementares_cd_complementaresTofuncionario_funcao               cd_complementares?      @relation("cd_complementaresTofuncionario_funcao", fields: [funcao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario_funcao_cd_complementares")
+  cd_complementares_cd_complementaresTofuncionario_motivo               cd_complementares?      @relation("cd_complementaresTofuncionario_motivo", fields: [motivo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario_motivo_cd_complementares")
+  pessoa_fisica                                                         pessoa_fisica?          @relation(fields: [pessoa_fisica_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario_pessoaFisica")
+  cd_complementares_cd_complementaresTofuncionario_situacao_trabalhista cd_complementares?      @relation("cd_complementaresTofuncionario_situacao_trabalhista", fields: [situacao_trabalhista], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario_situacao_trabalhista_cd_complementares")
+  cd_complementares_cd_complementaresTofuncionario_tipo_conta           cd_complementares?      @relation("cd_complementaresTofuncionario_tipo_conta", fields: [tipo_conta], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario_tipo_conta_cd_complementares")
+  fechamento_caixa                                                      fechamento_caixa[]
+  fechamento_tesouraria                                                 fechamento_tesouraria[]
+  relacao_caixa                                                         relacao_caixa[]
+  senha_gerente                                                         senha_gerente[]
+  venda                                                                 venda[]
+}
+
+model grade {
+  id                   Int             @id @default(autoincrement())
+  produto_id           Int
+  produto_cor_id       Int
+  produto_tamanho_id   Int
+  estoque_atual        Decimal?        @db.Decimal(19, 4)
+  estoque_minimo       Decimal?        @db.Decimal(19, 4)
+  estoque_de_seguranca Decimal?        @db.Decimal(19, 4)
+  produto_cor          produto_cor     @relation(fields: [produto_cor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grade_cor_id")
+  produto              produto         @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grade_produto_id")
+  produto_tamanho      produto_tamanho @relation(fields: [produto_tamanho_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grade_tamanho_id")
+  item_pedido          item_pedido[]
+  items_compra         items_compra[]
+  preco_produto        preco_produto[]
+}
+
+model item_pedido {
+  id            Int            @id @default(autoincrement())
+  valor_item    Decimal        @default(0) @db.Decimal(19, 4)
+  quant_produto Int            @default(1)
+  venda_id      Int
+  produto_id    Int
+  grade_id      Int?
+  gerente_id    Int?
+  senha_gerente senha_gerente? @relation(fields: [gerente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "gerente_id_item_pedido_fk")
+  grade         grade?         @relation(fields: [grade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_item_pedido_grade")
+  produto       produto        @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_item_pedido_produto")
+  venda         venda          @relation(fields: [venda_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_item_pedido_venda")
+}
+
+model item_pedido_certificado {
+  id                Int      @id @default(autoincrement())
+  venda_id          Int
+  tipo_certificado  Int
+  filiado           Int
+  tipo              Int
+  cnpj              String
+  valor             Decimal? @db.Decimal(19, 4)
+  razao_social_nome String?
+  fantasia          String?
+  forma_pagamento   Int      @default(1)
+  justificativa     String?
+  venda             venda    @relation(fields: [venda_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_item_pedido_certificado_venda")
+}
+
+model items_compra {
+  id            Int      @id @default(autoincrement())
+  id_compra     Int
+  id_produto    Int
+  qtde          Int
+  valorUnitario Decimal? @db.Decimal(19, 4)
+  ipi           Decimal? @db.Decimal(19, 4)
+  status        Int?
+  grade_id      Int?
+  grade         grade?   @relation(fields: [grade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_items_compra_grade")
+  compra        compra   @relation(fields: [id_compra], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "items_compra_fk")
+  produto       produto  @relation(fields: [id_produto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "itemsCompras_produto_fk")
+}
+
+model migration {
+  version    String @id @db.VarChar(180)
+  apply_time Int?
+}
+
+model movimentacao {
+  id                   Int               @id @default(autoincrement())
+  valor_movimentacao   Decimal?          @db.Decimal(19, 4)
+  tipo_movimentacao_id Int
+  tipo_pagamento_id    Int?
+  data_movimentacao    DateTime          @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  hr_movimentacao      DateTime          @default(dbgenerated("'08:53:41.195326'::time without time zone")) @db.Time(0)
+  bloqueado            Boolean           @default(false)
+  cd_complementares    cd_complementares @relation(fields: [tipo_movimentacao_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "movimentacao_tipo_movimentacao_fk")
+  tipo_pagamento       tipo_pagamento?   @relation(fields: [tipo_pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "movimentacao_tipo_pagamento_fk")
+}
+
+model movimentacao_caixa {
+  id                Int                @id @default(autoincrement())
+  data              DateTime           @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  tipo              Int
+  operacao          Int?
+  valor             Decimal            @db.Decimal(19, 4)
+  cheque_id         Int?
+  cheque            cheque?            @relation(fields: [cheque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimentacao_caixa_cheque")
+  cd_complementares cd_complementares? @relation(fields: [operacao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimentacao_caixa")
+}
+
+model movimentacao_tesouraria {
+  id                             Int                              @id @default(autoincrement())
+  valor                          Decimal                          @db.Decimal(19, 4)
+  tipo                           Int
+  data                           DateTime                         @db.Date
+  fechamento_caixa_id            Int?
+  confirmacao_recebimento        Boolean?                         @default(true)
+  relacao_id                     Int?
+  fechamento_tesouraria_id       Int?
+  fechamento_caixa               fechamento_caixa?                @relation(fields: [fechamento_caixa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tesouraria_fechamento_caixa_fk")
+  fechamento_tesouraria          fechamento_tesouraria?           @relation(fields: [fechamento_tesouraria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "movimentacao_tesouraria_fechamento_tesouraria_fk")
+  movimentacao_tesouraria_cheque movimentacao_tesouraria_cheque[]
+}
+
+model movimentacao_tesouraria_cheque {
+  id                         Int                     @id @default(autoincrement())
+  movimentacao_tesouraria_id Int
+  cheque_id                  Int
+  cheque                     cheque                  @relation(fields: [cheque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimentacao_tesouraria_cheque_cheque")
+  movimentacao_tesouraria    movimentacao_tesouraria @relation(fields: [movimentacao_tesouraria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimentacao_tesouraria_cheque_movimentacao_tesouraria")
+}
+
+model operadora {
+  id             Int              @id @default(autoincrement())
+  nome           String
+  id_banco       Int
+  banco          banco            @relation(fields: [id_banco], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_banco")
+  cartao         cartao[]
+  tipo_pagamento tipo_pagamento[]
+}
+
+model pagamento {
+  id                       Int                    @id @default(autoincrement())
+  valor_pagamento          Decimal?               @db.Decimal(19, 4)
+  venda_id                 Int?
+  pessoa_fisica_id         Int?
+  pessoa_juridica_id       Int?
+  data_pagamento           DateTime               @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  tipo                     Int?
+  compra_id                Int?
+  fechamento_caixa_id      Int?
+  em_carteira              Boolean?               @default(false)
+  gravado                  Boolean?               @default(false)
+  relacao_id               Int?
+  fechamento_tesouraria_id Int?
+  tesouraria               Boolean?               @default(false)
+  contas_receber_id        Int?
+  compra                   compra?                @relation(fields: [compra_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_compra_id_fk")
+  fechamento_caixa         fechamento_caixa?      @relation(fields: [fechamento_caixa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_fechamento_caixa_fk")
+  fechamento_tesouraria    fechamento_tesouraria? @relation(fields: [fechamento_tesouraria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_fechamento_tesouraria_id")
+  pessoa_fisica            pessoa_fisica?         @relation(fields: [pessoa_fisica_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_pessoa_fisica_id_fk")
+  pessoa_juridica          pessoa_juridica?       @relation(fields: [pessoa_juridica_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_pessoa_juridica_id_fk")
+  venda                    venda?                 @relation(fields: [venda_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_venda_id_fk")
+  boleto                   boleto[]
+  tipo_pagamento           tipo_pagamento[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model pagamento_cheque_terceiros {
+  cheque_id                      Int
+  tipo_pagamento_contas_pagar_id Int
+  cheque                         cheque         @relation(fields: [cheque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_cheque_terceiros_cheque_fk")
+  tipo_pagamento                 tipo_pagamento @relation(fields: [tipo_pagamento_contas_pagar_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_cheque_terceiros_tipo_pagamento_contas_pagar_fk")
+
+  @@ignore
+}
+
+model parcelas_contas_pagar {
+  id              Int           @id @default(autoincrement())
+  data_vencimento DateTime?     @db.Timestamp(0)
+  valor           Decimal?      @db.Decimal(19, 4)
+  contas_pagar_id Int?
+  status          Boolean       @default(false)
+  pagamento_id    Int?
+  contas_pagar    contas_pagar? @relation(fields: [contas_pagar_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "parcelas_contas_pagar_contas_pagar_id_fk")
+}
+
+model parcelas_contas_receber {
+  id                Int             @id @default(autoincrement())
+  data_vencimento   DateTime?       @db.Timestamp(0)
+  valor             Decimal?        @db.Decimal(19, 4)
+  contas_receber_id Int?
+  status            Boolean         @default(false)
+  pagamento_id      Int?
+  contas_receber    contas_receber? @relation(fields: [contas_receber_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "parcelas_contas_receber_contas_receber_id_fk")
+}
+
+model parcelas_pagamento {
+  id                Int             @id @default(autoincrement())
+  data_vencimento   DateTime?       @db.Timestamp(0)
+  valor             Decimal?        @db.Decimal(19, 4)
+  tipo_pagamento_id Int
+  paga              Boolean?        @default(false)
+  conta_corrente_id Int?
+  data_credito      DateTime?       @db.Date
+  valor_creditado   Decimal?        @db.Decimal(19, 4)
+  conta_corrente    conta_corrente? @relation(fields: [conta_corrente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_parcelas_pagamento_conta_corrente")
+  tipo_pagamento    tipo_pagamento  @relation(fields: [tipo_pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "parcelas_pagamento_tipo_pagamento_id_fk")
+}
+
+model pessoa_fisica {
+  id                                                                      Int                         @id @default(autoincrement())
+  cpf                                                                     BigInt                      @unique
+  nome                                                                    String
+  nascimento                                                              DateTime?                   @db.Date
+  sexo                                                                    Int?
+  escolaridade                                                            Int?
+  estado_civil                                                            Int?
+  conjuge                                                                 String?
+  mae                                                                     String?
+  pai                                                                     String?
+  n_identidade                                                            String?
+  orgao_expeditor                                                         String?
+  ctps                                                                    String?
+  data_expedicao                                                          DateTime?                   @db.Date
+  pis_pasep                                                               String?
+  nis                                                                     String?
+  titulo_eleitor                                                          String?
+  zona                                                                    String?
+  secao                                                                   String?
+  habilitacao                                                             String?
+  categoria                                                               Int?
+  cep                                                                     String?
+  uf                                                                      String?
+  cidade                                                                  String?
+  bairro                                                                  String?
+  rua                                                                     String?
+  numero                                                                  Int?
+  quadra                                                                  String?
+  lote                                                                    String?
+  complemento                                                             String?
+  fone                                                                    BigInt?
+  tipo                                                                    Int?
+  fone2                                                                   BigInt?
+  tipo2                                                                   Int?
+  fone3                                                                   BigInt?
+  tipo3                                                                   Int?
+  email                                                                   String?
+  situacao                                                                Int?
+  reside                                                                  DateTime?                   @db.Date
+  cnpj                                                                    BigInt?
+  razao_social                                                            String?
+  fantasia                                                                String?
+  df_cep                                                                  String?
+  df_uf                                                                   String?
+  df_cidade                                                               String?
+  df_bairro                                                               String?
+  df_rua                                                                  String?
+  df_numero                                                               String?
+  df_quadra                                                               String?
+  df_lote                                                                 String?
+  df_complemento                                                          String?
+  df_fone                                                                 BigInt?
+  df_tipo                                                                 Int?
+  df_fone2                                                                BigInt?
+  df_tipo2                                                                Int?
+  cargo_funcao                                                            String?
+  salario                                                                 Decimal?                    @db.Decimal(19, 4)
+  admissao                                                                DateTime?                   @db.Date
+  ref_empresa                                                             String?
+  ref_foneEmpresa                                                         BigInt?
+  ref_empresa2                                                            String?
+  ref_foneEmpresa2                                                        BigInt?
+  ref_empresa3                                                            String?
+  ref_foneEmpresa3                                                        BigInt?
+  ref_pessoa                                                              String?
+  ref_fonePessoa                                                          BigInt?
+  ref_pessoa2                                                             String?
+  ref_fonePessoa2                                                         BigInt?
+  ref_pessoa3                                                             String?
+  ref_fonePessoa3                                                         BigInt?
+  banco                                                                   Int?
+  agencia                                                                 String?
+  banco1                                                                  Int?
+  agencia1                                                                String?
+  banco2                                                                  Int?
+  agencia2                                                                String?
+  bandeira                                                                Int?
+  vencimento                                                              DateTime?                   @db.Date
+  bandeira1                                                               Int?
+  vencimento1                                                             DateTime?                   @db.Date
+  bandeira2                                                               Int?
+  vencimento2                                                             DateTime?                   @db.Date
+  limite_de_credito                                                       Decimal?                    @db.Decimal(19, 4)
+  n_max_parcelas                                                          Int?
+  reservista                                                              String?
+  categoria_reservista                                                    Int?
+  serie                                                                   String?
+  emissao                                                                 DateTime?                   @db.Date
+  limite_credito_atual                                                    Decimal?                    @default(0) @db.Decimal(19, 4)
+  cliente                                                                 Boolean?
+  banco_bancoTopessoa_fisica_banco                                        banco?                      @relation("bancoTopessoa_fisica_banco", fields: [banco], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_banco")
+  banco_bancoTopessoa_fisica_banco1                                       banco?                      @relation("bancoTopessoa_fisica_banco1", fields: [banco1], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_banco1")
+  banco_bancoTopessoa_fisica_banco2                                       banco?                      @relation("bancoTopessoa_fisica_banco2", fields: [banco2], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_banco2")
+  cd_complementares_cd_complementaresTopessoa_fisica_categoria            cd_complementares?          @relation("cd_complementaresTopessoa_fisica_categoria", fields: [categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_categoria")
+  cd_complementares_cd_complementaresTopessoa_fisica_categoria_reservista cd_complementares?          @relation("cd_complementaresTopessoa_fisica_categoria_reservista", fields: [categoria_reservista], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pessoaFisica_categoria_reservista_cd_complementares")
+  cd_complementares_cd_complementaresTopessoa_fisica_df_tipo              cd_complementares?          @relation("cd_complementaresTopessoa_fisica_df_tipo", fields: [df_tipo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_dfTipo")
+  cd_complementares_cd_complementaresTopessoa_fisica_df_tipo2             cd_complementares?          @relation("cd_complementaresTopessoa_fisica_df_tipo2", fields: [df_tipo2], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_dfTipo2")
+  cd_complementares_cd_complementaresTopessoa_fisica_escolaridade         cd_complementares?          @relation("cd_complementaresTopessoa_fisica_escolaridade", fields: [escolaridade], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_escolaridade")
+  cd_complementares_cd_complementaresTopessoa_fisica_estado_civil         cd_complementares?          @relation("cd_complementaresTopessoa_fisica_estado_civil", fields: [estado_civil], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_estadoCivil")
+  cd_complementares_cd_complementaresTopessoa_fisica_sexo                 cd_complementares?          @relation("cd_complementaresTopessoa_fisica_sexo", fields: [sexo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sexo")
+  cd_complementares_cd_complementaresTopessoa_fisica_tipo                 cd_complementares?          @relation("cd_complementaresTopessoa_fisica_tipo", fields: [tipo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo")
+  cd_complementares_cd_complementaresTopessoa_fisica_tipo2                cd_complementares?          @relation("cd_complementaresTopessoa_fisica_tipo2", fields: [tipo2], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo2")
+  cd_complementares_cd_complementaresTopessoa_fisica_tipo3                cd_complementares?          @relation("cd_complementaresTopessoa_fisica_tipo3", fields: [tipo3], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo3")
+  contas_receber                                                          contas_receber[]
+  fornecedor                                                              fornecedor[]
+  funcionario                                                             funcionario[]
+  pagamento                                                               pagamento[]
+  pessoa_fisica_dependentes                                               pessoa_fisica_dependentes[]
+  pessoa_fisica_documento                                                 pessoa_fisica_documento[]
+  venda                                                                   venda[]
+}
+
+model pessoa_fisica_dependentes {
+  id                Int                @id @default(autoincrement())
+  nome              String?
+  nascimento        DateTime?          @db.Date
+  parentesco        Int?
+  id_pessoa_fisica  Int?
+  cpf               BigInt?
+  sexo              Int?
+  pessoa_fisica     pessoa_fisica?     @relation(fields: [id_pessoa_fisica], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pessoaFisicaDependentes_pessoaFisica_fk")
+  cd_complementares cd_complementares? @relation(fields: [sexo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pessoa_fisica_dependentes_sexo_cd_complementares")
+}
+
+model pessoa_fisica_documento {
+  id               Int           @id @default(autoincrement())
+  arquivo          String
+  id_pessoa_fisica Int
+  identificacao    String
+  pessoa_fisica    pessoa_fisica @relation(fields: [id_pessoa_fisica], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pessoaFisicaDocumento_pessoaFisica_fk")
+}
+
+model pessoa_juridica {
+  id                                                         Int                       @id @default(autoincrement())
+  cnpj                                                       BigInt                    @unique
+  fantasia                                                   String
+  razao_social                                               String?
+  cep                                                        String?
+  uf                                                         String?
+  cidade                                                     String?
+  bairro                                                     String?
+  rua                                                        String?
+  numero                                                     String?
+  quadra                                                     String?
+  lote                                                       String?
+  complemento                                                String?
+  fone                                                       BigInt?
+  tipo                                                       Int?
+  fone1                                                      BigInt?
+  tipo1                                                      Int?
+  email                                                      String?
+  site                                                       String?
+  cliente                                                    Boolean?
+  cd_complementares_cd_complementaresTopessoa_juridica_tipo  cd_complementares?        @relation("cd_complementaresTopessoa_juridica_tipo", fields: [tipo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo")
+  cd_complementares_cd_complementaresTopessoa_juridica_tipo1 cd_complementares?        @relation("cd_complementaresTopessoa_juridica_tipo1", fields: [tipo1], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo1")
+  contas_receber                                             contas_receber[]
+  fornecedor                                                 fornecedor[]
+  pagamento                                                  pagamento[]
+  pessoa_juridica_contato                                    pessoa_juridica_contato[]
+  venda                                                      venda[]
+}
+
+model pessoa_juridica_contato {
+  id                                                                 Int                @id @default(autoincrement())
+  fone                                                               BigInt?
+  tipo                                                               Int?
+  fone1                                                              BigInt?
+  tipo1                                                              Int?
+  email                                                              String?
+  observacoes                                                        String?
+  id_pessoajuridica                                                  Int?
+  nome                                                               String
+  pessoa_juridica                                                    pessoa_juridica?   @relation(fields: [id_pessoajuridica], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pessoaJuridica")
+  cd_complementares_cd_complementaresTopessoa_juridica_contato_tipo  cd_complementares? @relation("cd_complementaresTopessoa_juridica_contato_tipo", fields: [tipo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo")
+  cd_complementares_cd_complementaresTopessoa_juridica_contato_tipo1 cd_complementares? @relation("cd_complementaresTopessoa_juridica_contato_tipo1", fields: [tipo1], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tipo1")
+}
+
+model plano_de_contas {
+  id                    Int                   @id @default(autoincrement())
+  descricao             String
+  classificacaoContabil Int
+  conta_corrente        conta_corrente[]
+  formas_de_pagamento   formas_de_pagamento[]
+  servico               servico[]
+}
+
+model preco_produto {
+  id                Int                @id @default(autoincrement())
+  id_produto        Int
+  dataInicial       DateTime           @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  dataFinal         DateTime?          @db.Date
+  preco_custo       Decimal            @db.Decimal(19, 4)
+  preco_venda       Decimal            @db.Decimal(19, 4)
+  ipi               Decimal?           @db.Decimal(19, 4)
+  qtde              Decimal?           @db.Decimal(19, 4)
+  documento         String?
+  historico         String?
+  tipo              Int?
+  grade_id          Int?
+  grade             grade?             @relation(fields: [grade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "preco_produto_grade_fk")
+  produto           produto            @relation(fields: [id_produto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "preco_produto_fk")
+  cd_complementares cd_complementares? @relation(fields: [tipo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_preco_produto_cd_complementares")
+}
+
+model preco_venda {
+  id                             Int      @id @default(autoincrement())
+  status                         Boolean? @default(true)
+  margem_lucro                   Float?   @default(0)
+  acrescimo_venda_cartao_debito  Float?   @default(0)
+  acrescimo_venda_cartao_credito Float?   @default(0)
+  acrescimo_venda_crediario      Float?   @default(0)
+  comissao_vendedor              Float?   @default(0)
+  comissao_gerente               Float?   @default(0)
+}
+
+model produto {
+  id                                                  Int               @id @default(autoincrement())
+  ref_loja                                            String
+  ref_fabrica                                         String
+  cod_barras                                          String
+  descricao                                           String
+  usa_fraciona                                        Boolean
+  usa_grade                                           Boolean
+  cor                                                 String?
+  caracteristicas                                     String?
+  estoque_atual                                       Decimal?          @db.Decimal(19, 4)
+  estoque_minimo                                      Decimal?          @db.Decimal(19, 4)
+  estoque_de_seguranca                                Decimal?          @db.Decimal(19, 4)
+  preco_custo                                         Decimal?          @db.Decimal(19, 4)
+  margem_lucro                                        Decimal?          @db.Decimal(19, 4)
+  comissao_venda                                      Decimal?          @db.Decimal(19, 4)
+  preco_venda                                         Decimal?          @db.Decimal(19, 4)
+  marca_id                                            Int?
+  unidade_id                                          Int
+  grupo_id                                            Int?
+  classe_id                                           Int?
+  subgrupo_id                                         Int?
+  subclasse_id                                        Int?
+  produto_classe_produto_classe_idToproduto_classe    produto_classe?   @relation("produto_classe_idToproduto_classe", fields: [classe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_classe")
+  produto_grupo_produto_grupo_idToproduto_grupo       produto_grupo?    @relation("produto_grupo_idToproduto_grupo", fields: [grupo_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_grupo")
+  produto_marca                                       produto_marca?    @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_marca")
+  produto_classe_produto_subclasse_idToproduto_classe produto_classe?   @relation("produto_subclasse_idToproduto_classe", fields: [subclasse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_subclasse")
+  produto_grupo_produto_subgrupo_idToproduto_grupo    produto_grupo?    @relation("produto_subgrupo_idToproduto_grupo", fields: [subgrupo_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_subgrupo")
+  produto_unidade                                     produto_unidade   @relation(fields: [unidade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_unidade")
+  entrada_produto                                     entrada_produto[]
+  grade                                               grade[]
+  item_pedido                                         item_pedido[]
+  items_compra                                        items_compra[]
+  preco_produto                                       preco_produto[]
+  produto_imagens                                     produto_imagens[]
+}
+
+model produto_classe {
+  id                                           Int              @id @default(autoincrement())
+  descricao                                    String
+  produto_classe_id                            Int?
+  produto_classe                               produto_classe?  @relation("produto_classeToproduto_classe_produto_classe_id", fields: [produto_classe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_classe_pai")
+  produto_produto_classe_idToproduto_classe    produto[]        @relation("produto_classe_idToproduto_classe")
+  produto_produto_subclasse_idToproduto_classe produto[]        @relation("produto_subclasse_idToproduto_classe")
+  other_produto_classe                         produto_classe[] @relation("produto_classeToproduto_classe_produto_classe_id")
+}
+
+model produto_cor {
+  id        Int     @id @default(autoincrement())
+  descricao String
+  grade     grade[]
+}
+
+model produto_grupo {
+  id                                         Int             @id @default(autoincrement())
+  descricao                                  String
+  grupo_id_pai                               Int?
+  produto_grupo                              produto_grupo?  @relation("produto_grupoToproduto_grupo_grupo_id_pai", fields: [grupo_id_pai], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_grupo_pai")
+  produto_produto_grupo_idToproduto_grupo    produto[]       @relation("produto_grupo_idToproduto_grupo")
+  produto_produto_subgrupo_idToproduto_grupo produto[]       @relation("produto_subgrupo_idToproduto_grupo")
+  other_produto_grupo                        produto_grupo[] @relation("produto_grupoToproduto_grupo_grupo_id_pai")
+}
+
+model produto_imagens {
+  id         Int     @id @default(autoincrement())
+  tipo       Int
+  arquivo    String
+  produto_id Int
+  produto    produto @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_imagens_produto_id")
+}
+
+model produto_marca {
+  id        Int       @id @default(autoincrement())
+  descricao String
+  produto   produto[]
+}
+
+model produto_tamanho {
+  id        Int     @id @default(autoincrement())
+  descricao String
+  tipo      Int     @default(1)
+  grade     grade[]
+}
+
+model produto_unidade {
+  id         Int       @id @default(autoincrement())
+  abreviacao String    @unique
+  descricao  String
+  produto    produto[]
+}
+
+model programar_pagamento {
+  id         Int      @id @default(autoincrement())
+  id_compra  Int
+  tipo       Int
+  n_parcelas Int
+  vencimento DateTime @db.Date
+  valor      Decimal? @db.Decimal(19, 4)
+  compra     compra   @relation(fields: [id_compra], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pPgamento_compra_fk")
+}
+
+model relacao_caixa {
+  id             Int         @id @default(autoincrement())
+  funcionario_id Int
+  caixa_id       Int
+  caixa          caixa       @relation(fields: [caixa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_caixa")
+  funcionario    funcionario @relation(fields: [funcionario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_funcionario")
+  deposito       deposito[]
+}
+
+model remessas {
+  id                Int             @id @default(autoincrement())
+  emissao           DateTime?       @db.Timestamp(0)
+  arquivo           String?
+  conta_corrente_id Int?
+  conta_corrente    conta_corrente? @relation(fields: [conta_corrente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "remessas_conta_corrente_fk")
+}
+
+model retorno {
+  id      Int       @id @default(autoincrement())
+  envio   DateTime? @db.Timestamp(0)
+  arquivo String?
+}
+
+model senha_gerente {
+  id             Int           @id @default(autoincrement())
+  funcionario_id Int?
+  senha          String?
+  funcionario    funcionario?  @relation(fields: [funcionario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "senha_gerente_funcionario_fk")
+  item_pedido    item_pedido[]
+}
+
+model servico {
+  id                                                           Int               @id @default(autoincrement())
+  tipo_fornecedor                                              Int
+  codigo_tabela                                                Int?
+  codigo_spc_brasil                                            Int?
+  servico                                                      String
+  plano_de_contas_id                                           Int
+  setor                                                        Int
+  preco_custo                                                  Decimal           @db.Decimal(19, 4)
+  preco_venda                                                  Decimal           @db.Decimal(19, 4)
+  pacote                                                       Boolean?
+  cnpj                                                         BigInt?
+  fantasia                                                     String?
+  preco_venda_associado                                        Decimal           @db.Decimal(19, 4)
+  preco_venda_associado_parcelado                              Decimal           @db.Decimal(19, 4)
+  preco_venda_associado_prazo                                  Decimal           @db.Decimal(19, 4)
+  preco_venda_parcelado                                        Decimal           @db.Decimal(19, 4)
+  preco_venda_prazo                                            Decimal           @db.Decimal(19, 4)
+  plano_de_contas                                              plano_de_contas   @relation(fields: [plano_de_contas_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_servico_plano_de_contas")
+  cd_complementares_cd_complementaresToservico_setor           cd_complementares @relation("cd_complementaresToservico_setor", fields: [setor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_servico_cd_complementares_setor")
+  cd_complementares_cd_complementaresToservico_tipo_fornecedor cd_complementares @relation("cd_complementaresToservico_tipo_fornecedor", fields: [tipo_fornecedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_servico_cd_complementares_tipo_fornecedor")
+}
+
+model tesouraria {
+  id                    Int                     @id @default(autoincrement())
+  saldo                 Decimal                 @db.Decimal(19, 4)
+  nome                  String?
+  deposito              deposito[]
+  fechamento_tesouraria fechamento_tesouraria[]
+}
+
+model tipo_pagamento {
+  id                         Int                          @id @default(autoincrement())
+  pagamento_id               Int?
+  forma_pagamento_id         Int?
+  bandeira_id                Int?
+  n_parcelas                 Int                          @default(1)
+  financeira_id              Int?
+  operadora_id               Int?
+  conta_corrente_id          Int?
+  data_deposito_cheque       DateTime?                    @db.Date
+  qnt_cheques                Int?                         @default(1)
+  valor                      Decimal?                     @db.Decimal(19, 4)
+  bandeiras                  bandeiras?                   @relation(fields: [bandeira_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_bandeiras_id_fk")
+  conta_corrente             conta_corrente?              @relation(fields: [conta_corrente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_conta_corrente_id_fk")
+  financeira                 financeira?                  @relation(fields: [financeira_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_financeira_id_fk")
+  formas_de_pagamento        formas_de_pagamento?         @relation(fields: [forma_pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_formas_de_pagamento_id_fk")
+  operadora                  operadora?                   @relation(fields: [operadora_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_operadora_id_fk")
+  pagamento                  pagamento?                   @relation(fields: [pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pagamento_pagamento_id_fk")
+  boleto                     boleto[]
+  cheque                     cheque[]
+  folhas_cheque              folhas_cheque[]
+  movimentacao               movimentacao[]
+  pagamento_cheque_terceiros pagamento_cheque_terceiros[] @ignore
+  parcelas_pagamento         parcelas_pagamento[]
+
+  @@index([pagamento_id], map: "index_tipo_pagamento_pagamento_id")
+}
+
+model transferencia {
+  id           Int       @id @default(autoincrement())
+  contaOrigem  Int
+  contaDestino Int
+  valorOrigem  Decimal   @default(0) @db.Decimal(19, 4)
+  data         DateTime? @default(dbgenerated("'06/04/2022'::date")) @db.Date
+}
+
+model venda {
+  id                      Int                       @id @default(autoincrement())
+  data                    DateTime                  @default(dbgenerated("'06/04/2022'::date")) @db.Date
+  valor_total             Decimal?                  @db.Decimal(19, 4)
+  pessoa_fisica_id        Int?
+  pessoa_juridica_id      Int?
+  paga                    Boolean?                  @default(false)
+  pagamento_id            Int?
+  funcionario_id          Int?
+  contas_pagar_id         Int?
+  nome                    String?
+  numero                  Int?
+  fechada                 Boolean?                  @default(false)
+  user_id                 Int?
+  orcamento               Boolean?                  @default(false)
+  confirmacao_desconto    Boolean?                  @default(true)
+  tipo_venda              Int?
+  contas_pagar            contas_pagar?             @relation(fields: [contas_pagar_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contas_pagar_comissao_funcionario")
+  funcionario             funcionario?              @relation(fields: [funcionario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_venda_funcionario")
+  pessoa_fisica           pessoa_fisica?            @relation(fields: [pessoa_fisica_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_venda_pessoa_fisica_id")
+  pessoa_juridica         pessoa_juridica?          @relation(fields: [pessoa_juridica_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_venda_pessoa_juridica_id")
+  item_pedido             item_pedido[]
+  item_pedido_certificado item_pedido_certificado[]
+  pagamento               pagamento[]
+}
+
+model xablaus {
+  id        Int      @id @default(autoincrement())
+  nome      String?  @db.VarChar(255)
+  idade     Int?
+  createdAt DateTime @db.Timestamptz(6)
+  updatedAt DateTime @db.Timestamptz(6)
+}
