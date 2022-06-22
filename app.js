@@ -1,13 +1,14 @@
 const express = require("express");
 const app = express();
-const Handlebars = require("express-handlebars");
+const exphbs = require("express-handlebars");
+const bodyParser = require("body-parser");
 const Sequelize = require("sequelize");
-const hbs = Handlebars.create({defaultLayout:"main"});
+
 
 //Config
     //Template Engine
-    app.engine("Handlebars",() => hbs);
-    app.set("view engine", "Handlebars");
+    app.engine("hbs", exphbs.engine( {extname: ".hbs"}));
+    app.set("view engine", "hbs");
     
     //Database Connection
     const sequelize = new Sequelize("easysell", "root", "123456", {
@@ -16,15 +17,26 @@ const hbs = Handlebars.create({defaultLayout:"main"});
         port: 5455
     });
 
+    //Parsing Middleware
+        //Parse application/x-www-form-urlencoded
+        app.use(bodyParser.urlencoded({ extended: false }));
+
+        //Parse application/json
+        app.use(bodyParser.json());
+    
+    //Static Files
+    app.use(express.static("public"));
 //Rotas
 
-app.get("/", function(req,res){
-    res.render(__dirname + "views/home.handlebars");
-});
-app.get("/cad", function(req,res){
-    res.render("form");
-});
+app.get("",(req,res) => {
+    res.render("home");
+})
 
-app.listen(8081,function(){
-    console.log("Servidor rodando no site http://localhost:8081");
-});
+app.get("/banks",(req,res) => {
+    res.render("banks");
+})
+app.get("/agency",(req,res) => {
+    res.render("agency");
+})
+
+app.listen(8081,() => console.log("Servidor rodando no site http://localhost:8081"));
