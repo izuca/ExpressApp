@@ -28,5 +28,4 @@ app.get("",(req,res) => {
 app.use("/banks",bankRouter);
 app.use("/agency",agencyRouter);
 
-
 app.listen(8081,() => console.log("Servidor rodando no site http://localhost:8081"));

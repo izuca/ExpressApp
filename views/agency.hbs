@@ -1,5 +1,5 @@
-<table class="table table-dark table-hover align-middle">
-    <thead>
+<table class="table table-dark table-hover table-bordered align-middle">
+    <thead class="table-light">
         <tr>
             <th scope="col">#</th>
             <th scope="col">Id Banco</th>
@@ -10,7 +10,7 @@
             <th scope="col">Tipo 1</th>
             <th scope="col">Agencia</th>
             <th scope="col">Nome da Agencia</th>
-            <th scope="col" class="text-end">Ações</th>
+            <th scope="col" class="text-center">Ações</th>
         </tr>
     </thead>
     {{#each allAgencies}}
@@ -24,7 +24,7 @@
         <td scope="row">{{tipo1}}</td>
         <td scope="row">{{agencia}}</td>
         <td scope="row">{{nome_agencia}}</td>
-        <td class="text-end">
+        <td class="text-center">
             <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-eye"></i> Ver</a>
             <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-pencil"></i> Editar</a>
             <a href="#" type="button" class="btn btn-outline-light btn-small"><i class="bi bi-x-lg"></i> Excluir</a>
