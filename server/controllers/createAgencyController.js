@@ -1,7 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-
 //Prisma Client
-const prisma = new PrismaClient();
+const { prisma } = require("../prisma");
 
 //Create Agencies
 exports.view = async (req,res) => {

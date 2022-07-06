@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const bankRouter = require("./server/routes/bank");
 const agencyRouter = require("./server/routes/agency");
 const createAgencyRouter = require("./server/routes/createAgency");
+const { prisma } = require("./server/prisma");
 
 //Config
     //Template Engine
@@ -30,4 +31,7 @@ app.use("/banks",bankRouter);
 app.use("/agency",agencyRouter);
 app.use("/createAgency",createAgencyRouter);
 
-app.listen(8081,() => console.log("Servidor rodando no site http://localhost:8081"));
+// Conectando no banco de dados antes de iniciar o servidor.
+prisma.$connect().then(
+    () => app.listen(8081,() => console.log("Servidor rodando no site http://localhost:8081"))
+);
