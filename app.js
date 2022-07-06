@@ -4,6 +4,7 @@ const exphbs = require("express-handlebars");
 const bodyParser = require("body-parser");
 const bankRouter = require("./server/routes/bank");
 const agencyRouter = require("./server/routes/agency");
+const createAgencyRouter = require("./server/routes/createAgency");
 
 //Config
     //Template Engine
@@ -27,5 +28,6 @@ app.get("",(req,res) => {
 
 app.use("/banks",bankRouter);
 app.use("/agency",agencyRouter);
+app.use("/createAgency",createAgencyRouter);
 
 app.listen(8081,() => console.log("Servidor rodando no site http://localhost:8081"));
