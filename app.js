@@ -7,6 +7,7 @@ const agencyRouter = require("./server/routes/agency");
 const createAgencyRouter = require("./server/routes/createAgency");
 const createBankRouter = require("./server/routes/createBank");
 const loginRouter = require("./server/routes/createLogin")
+const registerRouter = require("./server/routes/register");
 const { prisma } = require("./server/prisma");
 
 //Config
@@ -34,6 +35,7 @@ app.use("/agency",agencyRouter);
 app.use("/createAgency",createAgencyRouter);
 app.use("/createBank",createBankRouter);
 app.use("/login",loginRouter);
+app.use("/register",registerRouter);
 
 // Conectando no banco de dados antes de iniciar o servidor.
 prisma.$connect().then(
