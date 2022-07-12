@@ -1,5 +1,5 @@
-const express = require("express");
-const app = express();
+const express = require("express"); //importa o express
+const app = express(); // cria uma variável que chama a função express
 const exphbs = require("express-handlebars");
 const bodyParser = require("body-parser");
 const bankRouter = require("./server/routes/bank");
@@ -11,7 +11,7 @@ const registerRouter = require("./server/routes/register");
 const { prisma } = require("./server/prisma");
 
 //Config
-    //Template Engine
+    //Definindo a Template Engine do Handlebars
     app.engine("hbs", exphbs.engine( {extname: ".hbs"}));
     app.set("view engine", "hbs");
 
@@ -22,14 +22,15 @@ const { prisma } = require("./server/prisma");
         //Parse application/json
         app.use(bodyParser.json());
     
-    //Static Files
+    //Define os arquivos estáticos na pasta public
     app.use(express.static("public"));
 //Rotas
 
 app.get("",(req,res) => {
     res.render("home");
-});
+}); // cria a rota / com o método get, renderizando a página home
 
+// Cria demais rotas
 app.use("/banks",bankRouter);
 app.use("/agency",agencyRouter);
 app.use("/createAgency",createAgencyRouter);

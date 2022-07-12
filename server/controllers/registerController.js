@@ -1,7 +1,7 @@
 //Prisma Client
 const { prisma } = require("../prisma");
 
-//Create login
+//View 
 exports.view = async (req,res) => {
     res.render("register");
 };
