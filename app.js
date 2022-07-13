@@ -26,7 +26,7 @@ const { prisma } = require("./server/prisma");
     app.use(express.static("public"));
 //Rotas
 
-app.get("",(req,res) => {
+app.get("/",(req,res) => {
     res.render("home");
 }); // cria a rota / com o método get, renderizando a página home
 
