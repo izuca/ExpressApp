@@ -41,6 +41,11 @@ app.use("/register",registerRouter);
 
 // Conectando no banco de dados antes de iniciar o servidor.
 
+/*
 prisma.$connect().then(
     () => app.listen(port,() => console.log("Servidor rodando no site http://localhost:8081"))
-);
+);*/
+
+app.listen(port,()=>{
+    console.log("Servidor rodando no site http://localhost:8081");
+});
