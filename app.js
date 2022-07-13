@@ -9,6 +9,7 @@ const createBankRouter = require("./server/routes/createBank");
 const loginRouter = require("./server/routes/createLogin")
 const registerRouter = require("./server/routes/register");
 const { prisma } = require("./server/prisma");
+const port = process.env.PORT;
 
 //Config
     //Definindo a Template Engine do Handlebars
@@ -39,6 +40,7 @@ app.use("/login",loginRouter);
 app.use("/register",registerRouter);
 
 // Conectando no banco de dados antes de iniciar o servidor.
+
 prisma.$connect().then(
-    () => app.listen(8081,() => console.log("Servidor rodando no site http://localhost:8081"))
+    () => app.listen(port,() => console.log("Servidor rodando no site http://localhost:8081"))
 );
