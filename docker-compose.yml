@@ -27,9 +27,9 @@ services:
       - postgres-data:/var/lib/postgresql/data/pgdata
       - ./initdb:/docker-entrypoint-initdb.d
     environment:
-      POSTGRES_USER: root
-      POSTGRES_DB: easysell
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_DB: "${DB_NAME}"
+      POSTGRES_PASSWORD: "${DB_PW}"
       PGDATA: /var/lib/postgresql/data/pgdata
       LANG: pt_BR.utf8
     ports:
@@ -44,8 +44,8 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: "example@example.com"
-      PGADMIN_DEFAULT_PASSWORD: "pgadmin1234"
+      PGADMIN_DEFAULT_EMAIL: "${PG_EMAIL}"
+      PGADMIN_DEFAULT_PASSWORD: "${PG_PW}"
     ports:
       - 15432:80
     depends_on:
