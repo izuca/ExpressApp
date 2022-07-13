@@ -9,7 +9,7 @@ const createBankRouter = require("./server/routes/createBank");
 const loginRouter = require("./server/routes/createLogin")
 const registerRouter = require("./server/routes/register");
 const { prisma } = require("./server/prisma");
-const port = process.env.PORT;
+const port = process.env.PORT || 8080;
 
 //Config
     //Definindo a Template Engine do Handlebars
